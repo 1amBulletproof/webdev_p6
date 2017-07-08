@@ -63,6 +63,7 @@ a:hover {
 }
 .big_text {
   font-size: large;
+  text-align: center;
 }
 .hiking_tours_list {
   display: block;
