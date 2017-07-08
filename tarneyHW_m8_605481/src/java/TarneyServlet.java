@@ -1,10 +1,11 @@
+
 /**
  * TarneyServlet Class
  * - Serves up HTML pages for Beartooth hiking company
+ *
  * @author Brandon Tarney
  * @since 6/31/2017
  */
-
 import com.brandontarney.bookingrate.Rates.HIKE;
 import com.brandontarney.controller.BadQueryStringException;
 import com.brandontarney.controller.BadRateException;
@@ -34,15 +35,26 @@ public class TarneyServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         String queryString = request.getQueryString();
+        //System.out.println("Query String is: " + queryString);
         try {
             HIKE hike = HikeQueryParser.getHike(queryString);
             int duration = HikeQueryParser.getDuration(queryString);
+            
+            int[] monthDayYear= HikeQueryParser.getDate(queryString);
+            int month = monthDayYear[0];
+            int day = monthDayYear[1];
+            int year = monthDayYear[2];
+            /*
             int year = HikeQueryParser.getYear(queryString);
             int month = HikeQueryParser.getMonth(queryString);
             int day = HikeQueryParser.getDay(queryString);
+            */
+
+            int partySize = HikeQueryParser.getPartySize(queryString);
 
             String[] rates = Controller.computeRate(hike, duration, year, month, day);
-            createHikeRatePage(response, rates[0]);
+            String totalCost = String.valueOf(partySize * Double.parseDouble(rates[0]));
+            createHikeRatePage(response, rates[0], totalCost);
         } catch (BadQueryStringException | BadRateException exception) {
             createUserErrorPage(response, exception.getMessage());
         }
@@ -50,8 +62,9 @@ public class TarneyServlet extends HttpServlet {
 
     /**
      * createUserErrorPage
-     * @param response  response sent to client
-     * @param errorMsg  message to display at the top of HTML page
+     *
+     * @param response response sent to client
+     * @param errorMsg message to display at the top of HTML page
      * @throws IOException
      */
     private void createUserErrorPage(HttpServletResponse response, String errorMsg)
@@ -65,6 +78,20 @@ public class TarneyServlet extends HttpServlet {
             out.println("<title>Beartooth Hiking Company (BHC)</title>");
             out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
             out.println("<link rel=\"stylesheet\" href=\"css/BeartoothHikingCompany.css\" type=\"text/css\" />");
+            out.println("<script type=\"text/javascript\" src=\"javascript/BeartoothHikingCompany.js\"></script>");
+            out.println("<script src=\"javascript/jquery-3.2.1.js\"></script>");
+            out.println("<script src=\"javascript/jquery-ui-1.12.1/jquery-ui.js\"></script>");
+            out.println("<script>");
+            out.println("$( function() {");
+            out.println("$( \"#datepicker\" ).datepicker();");
+            out.println("} );");
+            out.println("</script>");
+            out.println("<style>");
+            out.println(".ui-datepicker {");
+            out.println("background: #c6dbff;");
+            out.println("}");
+            out.println("</style>");
+
             out.println("</head>");
 
             out.println("<body>");
@@ -80,8 +107,8 @@ public class TarneyServlet extends HttpServlet {
             out.println("<h2>ERROR</h2>");
             out.println("<p class=\"excited_msg\">" + errorMsg + "</p>");
             out.println("<h2 id=\"form_header\">Choose Your Hike</h2>");
-            // This is the local port out.println("<form action=\"http://localhost:8084/tarneyHW_m7_605481/TarneyServlet\" method=GET>");
-            out.println("<form action=\"http://web6.jhuep.com:80/tarneyHW_m7_605481/TarneyServlet\" method=GET>");
+            out.println("<form action=\"http://localhost:8084/tarneyHW_m7_605481/TarneyServlet\" method=GET onSubmit=\" return validatePartySize(1, 10)\">");
+            //out.println("<form action=\"http://web6.jhuep.com:80/tarneyHW_m7_605481/TarneyServlet\" method=GET onSubmit=\" return validatePartySize(1, 10)\">");
             out.println("<p class=\"excited_msg\">Hike</p>");
             out.println("<select class=\"bigger_text\" name=\"hike\" size=\"1\">");
             out.println("<option value=\"hellroaring\">Hellroaring Plateau</option>");
@@ -89,52 +116,8 @@ public class TarneyServlet extends HttpServlet {
             out.println("<option value=\"beaten\">Beaten Path</option>");
             out.println("</select>");
             out.println("<p class=\"excited_msg\">Date (6/1 - 9/31)</p>");
-            out.println("<select class=\"bigger_text\" name=\"year\" size=\"1\">");
-            out.println("<option value=\"2017\">2017</option>");
-            out.println("<option value=\"2018\">2018</option>");
-            out.println("<option value=\"2019\">2019</option>");
-            out.println("<option value=\"2020\">2020</option>");
-            out.println("</select>");
-            out.println("<select class=\"bigger_text\" name=\"month\" size=\"1\">");
-            out.println("<option value=\"6\">June</option>");
-            out.println("<option value=\"7\">July</option>");
-            out.println("<option value=\"8\">August</option>");
-            out.println("<option value=\"9\">September</option>");
-            out.println("</select>");
-            out.println("<select class=\"bigger_text\" name=\"day\" size=\"1\">");
-            out.println("<option value=\"1\">1</option>");
-            out.println("<option value=\"2\">2</option>");
-            out.println("<option value=\"3\">3</option>");
-            out.println("<option value=\"4\">4</option>");
-            out.println("<option value=\"5\">5</option>");
-            out.println("<option value=\"6\">6</option>");
-            out.println("<option value=\"7\">7</option>");
-            out.println("<option value=\"8\">8</option>");
-            out.println("<option value=\"9\">9</option>");
-            out.println("<option value=\"10\">10</option>");
-            out.println("<option value=\"11\">11</option>");
-            out.println("<option value=\"12\">12</option>");
-            out.println("<option value=\"13\">13</option>");
-            out.println("<option value=\"14\">14</option>");
-            out.println("<option value=\"15\">15</option>");
-            out.println("<option value=\"16\">16</option>");
-            out.println("<option value=\"17\">17</option>");
-            out.println("<option value=\"18\">18</option>");
-            out.println("<option value=\"19\">19</option>");
-            out.println("<option value=\"20\">20</option>");
-            out.println("<option value=\"21\">21</option>");
-            out.println("<option value=\"22\">22</option>");
-            out.println("<option value=\"23\">23</option>");
-            out.println("<option value=\"24\">24</option>");
-            out.println("<option value=\"25\">25</option>");
-            out.println("<option value=\"26\">26</option>");
-            out.println("<option value=\"27\">27</option>");
-            out.println("<option value=\"28\">28</option>");
-            out.println("<option value=\"29\">29</option>");
-            out.println("<option value=\"30\">30</option>");
-            out.println("<option value=\"31\">31</option>");
-            out.println("</select>");
-            out.println("<p class=\"excited_msg\">Duration (days)</p>");
+            out.println("<input type=\"text\" class=\"big_text\" id=\"datepicker\" name=\"datepicker\" size=\"10\" value=\"06/01/2017\">");
+            out.println("<p class=\"excited_msg\">Duration (days, see below)</p>");
             out.println("<select class=\"bigger_text\" name=\"duration\">");
             out.println("<option value=\"2\">2</option>");
             out.println("<option value=\"3\">3</option>");
@@ -143,7 +126,7 @@ public class TarneyServlet extends HttpServlet {
             out.println("<option value=\"7\">7</option>");
             out.println("</select>");
             out.println("<p class=\"excited_msg\">Party Size (Humans, 1 - 10)</p>");
-            out.println("<input class=\"big_text\" type=\"text\" size=\"5\" maxlength=\"2\" name=\"people\" id=\"people\" onBlur=\"validatePartySize(1,10)\">");
+            out.println("<input class=\"big_text\" type=\"text\" size=\"5\" maxlength=\"2\" name=\"people\" id=\"people\" onBlur=\"validatePartySize(1,10)\" value=\"1\">");
             out.println("<br/><br/>");
             out.println("<input class=\"biggest_text\" type=\"SUBMIT\" name=\"submit\" value=\"submit\" />");
             out.println("<br/>");
@@ -165,7 +148,7 @@ public class TarneyServlet extends HttpServlet {
             out.println("</tr>");
             out.println("<tr>");
             out.println("<th>Tour</th>");
-            out.println("<th>Duration (days, see below)</th>");
+            out.println("<th>Duration (days)</th>");
             out.println("<th>Difficulty</th>");
             out.println("</tr>");
             out.println("</thead>");
@@ -203,11 +186,12 @@ public class TarneyServlet extends HttpServlet {
 
     /**
      * createHikeRatePage
-     * @param response  response sent to client
-     * @param rate      rate to display on HTML page
+     *
+     * @param response response sent to client
+     * @param rate rate to display on HTML page
      * @throws IOException
      */
-    private void createHikeRatePage(HttpServletResponse response, String rate)
+    private void createHikeRatePage(HttpServletResponse response, String rate, String totalCost)
             throws IOException {
 
         try (PrintWriter out = response.getWriter()) {
@@ -219,6 +203,20 @@ public class TarneyServlet extends HttpServlet {
             out.println("<title>Beartooth Hiking Company (BHC)</title>");
             out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
             out.println("<link rel=\"stylesheet\" href=\"css/BeartoothHikingCompany.css\" type=\"text/css\" />");
+            out.println("<script type=\"text/javascript\" src=\"javascript/BeartoothHikingCompany.js\"></script>");
+            out.println("<script src=\"javascript/jquery-3.2.1.js\"></script>");
+            out.println("<script src=\"javascript/jquery-ui-1.12.1/jquery-ui.js\"></script>");
+            out.println("<script>");
+            out.println("$( function() {");
+            out.println("$( \"#datepicker\" ).datepicker();");
+            out.println("} );");
+            out.println("</script>");
+            out.println("<style>");
+            out.println(".ui-datepicker {");
+            out.println("background: #c6dbff;");
+            out.println("}");
+            out.println("</style>");
+
             out.println("</head>");
 
             out.println("<body>");
@@ -232,8 +230,8 @@ public class TarneyServlet extends HttpServlet {
 
             out.println("<section id=\"form\" class=\"table\">");
             out.println("<h2 id=\"form_header\">Choose Your Hike</h2>");
-            // This is the local port out.println("<form action=\"http://localhost:8084/tarneyHW_m7_605481/TarneyServlet\" method=GET>");
-            out.println("<form action=\"http://web6.jhuep.com:80/tarneyHW_m7_605481/TarneyServlet\" method=GET>");
+            out.println("<form action=\"http://localhost:8084/tarneyHW_m7_605481/TarneyServlet\" method=GET onSubmit=\" return validatePartySize(1, 10)\">");
+            //out.println("<form action=\"http://web6.jhuep.com:80/tarneyHW_m7_605481/TarneyServlet\" method=GET onSubmit=\" return validatePartySize(1, 10)\">");
             out.println("<p class=\"excited_msg\">Hike</p>");
             out.println("<select class=\"bigger_text\" name=\"hike\" size=\"1\">");
             out.println("<option value=\"hellroaring\">Hellroaring Plateau</option>");
@@ -241,52 +239,8 @@ public class TarneyServlet extends HttpServlet {
             out.println("<option value=\"beaten\">Beaten Path</option>");
             out.println("</select>");
             out.println("<p class=\"excited_msg\">Date (6/1 - 9/31)</p>");
-            out.println("<select class=\"bigger_text\" name=\"year\" size=\"1\">");
-            out.println("<option value=\"2017\">2017</option>");
-            out.println("<option value=\"2018\">2018</option>");
-            out.println("<option value=\"2019\">2019</option>");
-            out.println("<option value=\"2020\">2020</option>");
-            out.println("</select>");
-            out.println("<select class=\"bigger_text\" name=\"month\" size=\"1\">");
-            out.println("<option value=\"6\">June</option>");
-            out.println("<option value=\"7\">July</option>");
-            out.println("<option value=\"8\">August</option>");
-            out.println("<option value=\"9\">September</option>");
-            out.println("</select>");
-            out.println("<select class=\"bigger_text\" name=\"day\" size=\"1\">");
-            out.println("<option value=\"1\">1</option>");
-            out.println("<option value=\"2\">2</option>");
-            out.println("<option value=\"3\">3</option>");
-            out.println("<option value=\"4\">4</option>");
-            out.println("<option value=\"5\">5</option>");
-            out.println("<option value=\"6\">6</option>");
-            out.println("<option value=\"7\">7</option>");
-            out.println("<option value=\"8\">8</option>");
-            out.println("<option value=\"9\">9</option>");
-            out.println("<option value=\"10\">10</option>");
-            out.println("<option value=\"11\">11</option>");
-            out.println("<option value=\"12\">12</option>");
-            out.println("<option value=\"13\">13</option>");
-            out.println("<option value=\"14\">14</option>");
-            out.println("<option value=\"15\">15</option>");
-            out.println("<option value=\"16\">16</option>");
-            out.println("<option value=\"17\">17</option>");
-            out.println("<option value=\"18\">18</option>");
-            out.println("<option value=\"19\">19</option>");
-            out.println("<option value=\"20\">20</option>");
-            out.println("<option value=\"21\">21</option>");
-            out.println("<option value=\"22\">22</option>");
-            out.println("<option value=\"23\">23</option>");
-            out.println("<option value=\"24\">24</option>");
-            out.println("<option value=\"25\">25</option>");
-            out.println("<option value=\"26\">26</option>");
-            out.println("<option value=\"27\">27</option>");
-            out.println("<option value=\"28\">28</option>");
-            out.println("<option value=\"29\">29</option>");
-            out.println("<option value=\"30\">30</option>");
-            out.println("<option value=\"31\">31</option>");
-            out.println("</select>");
-            out.println("<p class=\"excited_msg\">Duration (days)</p>");
+            out.println("<input type=\"text\" class=\"big_text\" id=\"datepicker\" name=\"datepicker\" size=\"10\" value=\"06/01/2017\">");
+            out.println("<p class=\"excited_msg\">Duration (days, see below)</p>");
             out.println("<select class=\"bigger_text\" name=\"duration\">");
             out.println("<option value=\"2\">2</option>");
             out.println("<option value=\"3\">3</option>");
@@ -295,15 +249,15 @@ public class TarneyServlet extends HttpServlet {
             out.println("<option value=\"7\">7</option>");
             out.println("</select>");
             out.println("<p class=\"excited_msg\">Party Size (Humans, 1 - 10)</p>");
-            out.println("<input class=\"big_text\" type=\"text\" size=\"5\" maxlength=\"2\" name=\"people\" id=\"people\" onBlur=\"validatePartySize(1,10)\">");
+            out.println("<input class=\"big_text\" type=\"text\" size=\"5\" maxlength=\"2\" name=\"people\" id=\"people\" onBlur=\"validatePartySize(1,10)\" value=\"1\">");
             out.println("<br/><br/>");
             out.println("<input class=\"biggest_text\" type=\"SUBMIT\" name=\"submit\" value=\"submit\" />");
             out.println("<br/>");
             out.println("<p class=\"excited_msg\">Cost Per Person:");
-            out.println("<input class=\"bigger_text\" type=\"text\" name=\"zip\" size=\"15\" maxlength=\"15\" value=\"$0.00 ($USD)\"/>");
+            out.println("<input class=\"bigger_text\" type=\"text\" name=\"zip\" size=\"15\" maxlength=\"15\" value=\"$" + rate + " ($USD)\"/>");
             out.println("</p>");
             out.println("<p class=\"excited_msg\">Total Cost:");
-            out.println("<input class=\"bigger_text\" type=\"text\" name=\"zip\" size=\"15\" maxlength=\"15\" value=\"$0.00 ($USD)\"/>");
+            out.println("<input class=\"bigger_text\" type=\"text\" name=\"zip\" size=\"15\" maxlength=\"15\" value=\"$" + totalCost + " ($USD)\"/>");
             out.println("</p>");
             out.println("</form>");
             out.println("</section>");

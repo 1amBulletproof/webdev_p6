@@ -1,7 +1,7 @@
 /** HikeQueryParser Class
- * <p>Contains static methods to extract parameters 
- * from an HTTP form query</p>
- * 
+ * <p>
+ * Contains static methods to extract parameters from an HTTP form query</p>
+ *
  * @author Brandon Tarney
  * @since 6/28/2017
  */
@@ -101,9 +101,9 @@ public class HikeQueryParser {
 
         return hikeDay;
     }
-    
-        public static int getDuration(String queryString) throws BadQueryStringException {
-        int queryStringOrder = 4;
+
+    public static int getDuration(String queryString) throws BadQueryStringException {
+        int queryStringOrder = 2;
         int hikeDuration;
 
         String[] queryValues = queryString.split("&");
@@ -121,5 +121,56 @@ public class HikeQueryParser {
         }
 
         return hikeDuration;
+    }
+
+    public static int getPartySize(String queryString) throws BadQueryStringException {
+        int queryStringOrder = 3;
+        int partySize;
+
+        String[] queryValues = queryString.split("&");
+        if (queryValues.length <= queryStringOrder) {
+            throw new BadQueryStringException("Not enough parameters (looking for party size)");
+        }
+
+        //System.out.println(queryString);
+        String[] partySizeKeyValuePairString = queryValues[queryStringOrder].split("=");
+        String hikePartySizeString = partySizeKeyValuePairString[1];
+
+        try {
+            partySize = Integer.parseInt(hikePartySizeString);
+        } catch (NumberFormatException e) {
+            throw new BadQueryStringException("Invalid duration value");
+        }
+
+        return partySize;
+    }
+
+    public static int[] getDate(String queryString) throws BadQueryStringException {
+        int queryStringOrder = 1;
+        int[] monthDayYear = new int[3];
+
+        //System.out.println(queryString);
+
+        String[] queryValues = queryString.split("&");
+        if (queryValues.length <= queryStringOrder) {
+            throw new BadQueryStringException("Not enough parameters (looking for party size)");
+        }
+
+        //System.out.println(queryString);
+        String[] datePairString = queryValues[queryStringOrder].split("=");
+        String dateString = datePairString[1];
+        //System.out.println(dateString);
+
+        String[] monthDayYearStr = dateString.split("%2F");
+
+        try {
+            monthDayYear[0] = Integer.parseInt(monthDayYearStr[0]);
+            monthDayYear[1] = Integer.parseInt(monthDayYearStr[1]);
+            monthDayYear[2] = Integer.parseInt(monthDayYearStr[2]);
+        } catch (NumberFormatException e) {
+            throw new BadQueryStringException("Invalid day, month, and/or year value");
+        }
+
+        return monthDayYear;
     }
 }
